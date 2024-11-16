@@ -1,0 +1,42 @@
+@import './theme.css';
+@import './kanbanpage.css';
+
+* {
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        Roboto,
+        Oxygen,
+        Ubuntu,
+        Cantarell,
+        'Fira Sans',
+        'Droid Sans',
+        'Helvetica Neue',
+        sans-serif;
+    /* font-size: 15px; */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body{
+    margin: 0;
+    background-color: var(--bg-color);
+    /* transition: 0.5s ease-out; */
+}
+
+.btn{
+    color: var(--light-txt-color);
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    box-sizing: content-box;
+    padding: 5px 10px;
+    /* background: radial-gradient(circle at 0% 0%, var(--btn-top-left-clr), var(--btn-bottom-right-clr)60%); */
+    background-color: var(--btn-color);
+}
+.btn:hover{
+    cursor: pointer;
+}
