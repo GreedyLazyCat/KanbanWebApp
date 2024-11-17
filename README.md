@@ -1,6 +1,7 @@
 # kanban
 
-Small kanban app, dont mind animations, just wanted to play with them
+Small kanban app, dont mind animations, just wanted to play with them.
+Since it is purely frontend app im going to host via github so there will be a link soon.
 
 ## Project Setup
 
