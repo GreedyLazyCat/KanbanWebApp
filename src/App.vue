@@ -4,8 +4,15 @@ import { RouterView } from 'vue-router';
 import { animateGetStarted, openingAnimation } from '@/animation/animations'
 import KanbanHeader from './components/KanbanHeader.vue';
 import HugeBottomLight from './components/HugeBottomLight.vue';
+import { useKanbanStore } from './store/KanbanStore';
 
+interface Kanban {
+    id: number,
+    title: string,
+    isNew: boolean
+}
 const started = ref(false)
+const kanbanStore = useKanbanStore()
 
 function start() {
   started.value = true;
@@ -19,6 +26,12 @@ onMounted(() => {
     // animateGetStarted(0)
     openingAnimation(1)
   })
+
+  const savedKanbans = localStorage.getItem("kanbans")
+  if (savedKanbans) {
+    const parsedKanbans = JSON.parse(savedKanbans) as Kanban[]
+    kanbanStore.setKanbans(parsedKanbans)
+  }
 });
 </script>
 

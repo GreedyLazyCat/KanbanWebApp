@@ -21,13 +21,13 @@
     -moz-osx-font-smoothing: grayscale;
 }
 
-body{
+body {
     margin: 0;
     background-color: var(--bg-color);
     /* transition: 0.5s ease-out; */
 }
 
-.btn{
+.btn {
     color: var(--light-txt-color);
     border: none;
     border-radius: 5px;
@@ -37,6 +37,23 @@ body{
     /* background: radial-gradient(circle at 0% 0%, var(--btn-top-left-clr), var(--btn-bottom-right-clr)60%); */
     background-color: var(--btn-color);
 }
-.btn:hover{
+
+.btn:hover {
+    cursor: pointer;
+}
+
+.icon-btn {
+    color: var(--light-txt-color);
+    border: none;
+    border-radius: 50%;
+    font-size: 1rem;
+    box-sizing: content-box;
+    padding: 5px 10px;
+    /* background: radial-gradient(circle at 0% 0%, var(--btn-top-left-clr), var(--btn-bottom-right-clr)60%); */
+    background-color: transparent;
+}
+
+
+.icon-btn:hover {
     cursor: pointer;
 }

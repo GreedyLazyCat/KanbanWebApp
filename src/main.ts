@@ -6,6 +6,9 @@ import gsap from 'gsap'
 import Flip from 'gsap/Flip'
 import { createPinia } from 'pinia'
 
+
+
+
 const pinia = createPinia()
 const app = createApp(App)
 
