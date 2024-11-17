@@ -1,10 +1,6 @@
 # kanban
 
-Small kanban app
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
+Small kanban app, dont mind animations, just wanted to play with them
 
 ## Project Setup
 
