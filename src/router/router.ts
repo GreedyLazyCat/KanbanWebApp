@@ -1,10 +1,11 @@
 import KanbanSelectPage from "@/page/KanbanSelectPage.vue";
+import KanbanTaskPage from "@/page/KanbanTaskPage.vue";
 import { createRouter, createWebHashHistory } from "vue-router";
 
 
 const routes = [
     { path: '/', component: KanbanSelectPage },
-    { path: '/:index?', component: KanbanSelectPage }
+    { path: '/:index?', component: KanbanTaskPage}
 ]
 
 const router = createRouter({

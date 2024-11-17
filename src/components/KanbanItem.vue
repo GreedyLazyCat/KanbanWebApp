@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const emit = defineEmits(['deleted', 'edited'])
@@ -25,7 +25,7 @@ function deleteKanban() {
     emit('deleted', kanban)
 }
 
-function openKanban(){
+function openKanban() {
     router.push(`/${kanban.id}`)
 }
 
@@ -44,6 +44,12 @@ function toggleTitleEditing() {
     }
 }
 
+watch(() => kanban.isNew, (newValue) => {
+    if(!newValue){
+        titleEditing.value = false;
+    }
+})
+
 onMounted(() => {
     focusInput()
 });
@@ -56,8 +62,8 @@ onMounted(() => {
             @keyup.enter="toggleTitleEditing" :placeholder="kanban.title" v-model="inputValue">
         <h3 v-else @dblclick="toggleTitleEditing">{{ inputValue }}</h3>
         <div class="kanban-item__ctrls">
-            <button class="btn" @click="toggleTitleEditing">{{ editButtonText }}</button>
-            <button class="btn" @click="deleteKanban">Delete</button>
+            <button class="btn" @click.stop="toggleTitleEditing">{{ editButtonText }}</button>
+            <button class="btn" @click.stop="deleteKanban">Delete</button>
         </div>
     </div>
 </template>

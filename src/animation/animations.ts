@@ -1,5 +1,5 @@
 import gsap from 'gsap'
-export function openingAnimation() {
+export function openingAnimation(duration: number) {
     gsap.fromTo('.kanban-tool__logo div h1',
         {
             x: -50,
@@ -8,7 +8,7 @@ export function openingAnimation() {
         {
             x: 0,
             opacity: 1.0,
-            duration: 1
+            duration: duration
         });
     gsap.fromTo('.line-separator',
         {
@@ -16,7 +16,7 @@ export function openingAnimation() {
         },
         {
             height: '4rem',
-            duration: 1
+            duration: duration
         });
     gsap.fromTo('.logo',
         {
@@ -26,7 +26,7 @@ export function openingAnimation() {
         {
             x: 0,
             opacity: 1,
-            duration: 1
+            duration: duration
         }
     )
     gsap.fromTo('.get-started-btn',
@@ -39,23 +39,27 @@ export function openingAnimation() {
             y: 0,
             opacity: 1,
             // height: 'fit-content',
-            duration: 1,
+            duration: duration,
         }
     )
 }
 
-export function animateGetStarted() {
-    gsap.to('.kanban-select-body',
+export function animateGetStarted(duration: number) {
+    let ease: string = 'expo.out'
+
+    gsap.to('.kanban-body',
         {
-            duration: 1,
-            overflow: 'hidden',
-            flexBasis: '90%'
+            duration: duration,
+            overflow: 'scroll',
+            flexBasis: '90%',
+            ease: ease
         }
     )
     gsap.to('.kanban-tool',
         {
-            duration: 1,
-            flexBasis: '10%'
+            duration: duration,
+            flexBasis: '10%',
+            ease: ease
         }
     )
     gsap.fromTo('.get-started-btn',
@@ -63,48 +67,61 @@ export function animateGetStarted() {
             position: 'absolute'
         },
         {
+            ease: ease,
             display: 'none',
             opacity: 0,
-            duration: 1,
+            duration: duration,
             scale: '0%'
             // y: -100
         }
     )
     gsap.to('.kanban-tool__logo ',
         {
-            duration: 1,
+            duration: duration,
+            ease: ease,
             flexBasis: '20%'
         }
     )
     gsap.to('.kanban-tool__logo h1',
         {
-            duration: 1,
+            ease: ease,
+            duration: duration,
             fontSize: '2rem'
         }
     )
     gsap.to('.kanban-tool img',
         {
-            duration: 1,
+            ease: ease,
+            duration: duration,
             width: '3rem',
             height: '3rem'
         }
     )
     gsap.to('.line-separator',
         {
-            duration: 1,
+            ease: ease,
+            duration: duration,
             height: '2rem'
         }
     )
     gsap.to('.kanban-tool__logo div',
         {
-            duration: 1,
+            duration: duration,
+            ease: ease,
             gap: '0.5rem'
         }
     )
     gsap.to('.kanban-tool__ctrls',
         {
-            duration: 1,
+            duration: duration,
+            ease: ease,
             flexBasis: '50%',
+        }
+    )
+    gsap.to('.header-bottom-border',
+        {
+            width: '70%',
+            duration: duration,
         }
     )
 }
