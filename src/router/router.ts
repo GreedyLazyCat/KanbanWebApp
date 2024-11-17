@@ -3,7 +3,8 @@ import { createRouter, createWebHashHistory } from "vue-router";
 
 
 const routes = [
-    { path: '/', component: KanbanSelectPage }
+    { path: '/', component: KanbanSelectPage },
+    { path: '/:index?', component: KanbanSelectPage }
 ]
 
 const router = createRouter({

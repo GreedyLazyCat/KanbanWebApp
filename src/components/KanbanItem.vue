@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+
+const emit = defineEmits(['deleted', 'edited'])
+const router = useRouter()
 
 const { kanban } = defineProps(['kanban'])
 
@@ -17,11 +21,25 @@ function focusInput() {
     }
 }
 
+function deleteKanban() {
+    emit('deleted', kanban)
+}
+
+function openKanban(){
+    router.push(`/${kanban.id}`)
+}
+
 function toggleTitleEditing() {
     titleEditing.value = !titleEditing.value
     if (titleEditing.value) {
         nextTick(() => {
             focusInput()
+        })
+    } else {
+        emit('edited', {
+            id: kanban.id,
+            title: inputValue.value,
+            isNew: false
         })
     }
 }
@@ -33,13 +51,13 @@ onMounted(() => {
 </script>
 
 <template>
-    <div class="kanban-item">
+    <div class="kanban-item" :class="{ 'new-item-animation': kanban.isNew }" @click="openKanban">
         <input v-if="titleEditing" ref="titleInput" type="text" name="" class="kanban-title-edit"
-            @keyup.enter="titleEditing = false" :placeholder="kanban.title" v-model="inputValue">
-        <h3 v-else>{{ inputValue }}</h3>
+            @keyup.enter="toggleTitleEditing" :placeholder="kanban.title" v-model="inputValue">
+        <h3 v-else @dblclick="toggleTitleEditing">{{ inputValue }}</h3>
         <div class="kanban-item__ctrls">
             <button class="btn" @click="toggleTitleEditing">{{ editButtonText }}</button>
-            <button class="btn">Delete</button>
+            <button class="btn" @click="deleteKanban">Delete</button>
         </div>
     </div>
 </template>
@@ -56,6 +74,10 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.7rem;
+}
+
+.new-item-animation {
+    animation: newKanbanItem 1s forwards;
 }
 
 .kanban-item>h3 {
@@ -78,5 +100,16 @@ onMounted(() => {
     border-radius: 5px;
     color: var(--text-color);
     font-size: 1.2rem;
+}
+
+@keyframes newKanbanItem {
+    0% {
+
+        background-color: #38ad5b;
+    }
+
+    100% {
+        background-color: var(--card-bg);
+    }
 }
 </style>

@@ -1,9 +1,20 @@
 <script lang="ts" setup>
 import KanbanItem from '@/components/KanbanItem.vue';
-import { computed, onMounted, reactive, ref } from 'vue';
+import { animateGetStarted, openingAnimation } from '@/animation/animations'
+import { Flip } from 'gsap/Flip';
+import { computed, nextTick, onMounted, reactive, ref } from 'vue';
+
+interface Kanban {
+    id: number,
+    title: string,
+    isNew: boolean
+}
 
 const started = ref(false);
 const showNewItem = ref(false);
+const disableNewItemTransition = ref(false);
+
+const logoTitle = ref()
 
 const kanbans = reactive([
     {
@@ -20,18 +31,21 @@ const kanbans = reactive([
 
 function start() {
     started.value = true;
+    animateGetStarted()
     localStorage.setItem("isNotNewUser", "true")
 }
 
 function addKanban() {
     let kanbansLength = kanbans.length;
     let kanban = kanbans[kanbansLength - 1];
+    let id = (kanban) ? kanban.id + 1 : 0;
     kanbans.push({
-        id: kanban.id + 1,
+        id: id,
         title: "New Kanban",
         isNew: true
     });
-    showNewItem.value = false;
+    // showNewItem.value = false;
+    // disableNewItemTransition.value = true;
 }
 
 function addMouseLeft() {
@@ -39,16 +53,34 @@ function addMouseLeft() {
 }
 
 function addMouseEnter() {
-    if (!kanbans.find((p) => p.isNew)) {
-        showNewItem.value = true;
+    // if (!kanbans.find((p) => p.isNew)) {
+    // disableNewItemTransition.value = false;
+    showNewItem.value = true;
+    // }
+}
+
+function kanbanDeleted(kanban: Kanban) {
+    let toDelete = kanbans.findIndex((p) => p.id == kanban.id)
+    if (toDelete >= 0) {
+        kanbans.splice(toDelete, 1)
+    }
+}
+
+function kanbanEdited(kanban: Kanban) {
+    let index = kanbans.findIndex((p) => p.id === kanban.id)
+    if (index >= 0) {
+        kanbans[index] = kanban;
     }
 }
 
 onMounted(() => {
     let isNotNewUser = localStorage.getItem("isNotNewUser")
     if (isNotNewUser != null) {
-        started.value = isNotNewUser === "true";
+        // started.value = isNotNewUser === "true";
     }
+    nextTick(() => {
+        openingAnimation()
+    })
 });
 
 
@@ -57,10 +89,10 @@ onMounted(() => {
 
 <template>
     <div class="kanban-list-main">
-        <div class="kanban-tool" :class="{ 'kanban-tool__started': started }">
+        <div class="kanban-tool">
             <div class="kanban-tool__logo">
                 <div>
-                    <h1>Kanban</h1>
+                    <h1 ref="logoTitle">Kanban</h1>
                     <div class="line-separator"></div>
                     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" />
                 </div>
@@ -71,9 +103,11 @@ onMounted(() => {
                     kanban</button>
             </div>
         </div>
-        <div class="kanban-select-body" :class="{ 'kanban-select-body__started': started }">
-            <KanbanItem v-for="kanban in kanbans" :kanban="kanban" :key="kanban.id" />
-            <div class="kanban-add-item" :class="{ 'opacity-1': showNewItem }">
+        <div class="kanban-select-body">
+            <KanbanItem v-for="kanban in kanbans" :kanban="kanban" :key="kanban.id" @edited="kanbanEdited"
+                @deleted="kanbanDeleted" />
+            <div class="kanban-add-item"
+                :class="{ 'transition-none': disableNewItemTransition, 'opacity-1': showNewItem }">
                 <h3>New Kanban</h3>
             </div>
         </div>
@@ -83,6 +117,10 @@ onMounted(() => {
 <style>
 .kanban-add-item.opacity-1 {
     opacity: 1;
+}
+
+.kanban-add-item.transition-none {
+    transition: none;
 }
 
 .kanban-add-item {
