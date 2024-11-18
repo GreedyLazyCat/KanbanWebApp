@@ -40,7 +40,6 @@ onMounted(() => {
                     </button>
                 </div>
                 <div class="tasks-col-body">
-
                 </div>
             </div>
         </div>
@@ -52,7 +51,6 @@ onMounted(() => {
     height: 100%;
     width: 100%;
     display: flex;
-    overflow: scroll;
     flex-direction: column;
 }
 

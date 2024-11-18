@@ -8,21 +8,26 @@
     flex-direction: column;
 
 }
-    
+
+/* Note for my self: 
+    I can leave height: 100% for elements in flex container in this 
+    type of situation where i need one of children to have a height of 100% 
+    because flex-basis(will be set in the animation) dicatates children how much they can grow 
+    AND! kanban-tool has elements with fixed size (so it gives kanban-tool a min-heigth and min-width).
+*/
 .kanban-tool {
     position: relative;
     padding: 10px 0;
     width: 80%;
+    height: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    /* flex-direction: column; */
-    /* flex-basis: 100%; */
-    /* animation: test 1s ease-in infinite; */
 }
 
 .kanban-body {
-    flex-basis: 0%;
+    /* flex-basis: 0%; */
+    height: 0%;
     overflow: hidden;
     color: var(--text-color);
     width: 70%;

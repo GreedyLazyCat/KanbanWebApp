@@ -50,15 +50,16 @@ export function animateGetStarted(duration: number) {
     gsap.to('.kanban-body',
         {
             duration: duration,
-            overflow: 'scroll',
-            flexBasis: '90%',
+            overflow: 'visible',
+            flexBasis: '95%',
+            height: '90%', 
             ease: ease
         }
     )
     gsap.to('.kanban-tool',
         {
             duration: duration,
-            flexBasis: '10%',
+            flexBasis: '5%',
             ease: ease
         }
     )
