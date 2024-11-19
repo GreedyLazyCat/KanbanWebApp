@@ -2,7 +2,7 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Task from '@/components/Task.vue';
 import type { KanbanTask } from '@/store/KanbanTasksStore';
-import { computed, inject, onMounted, ref, useTemplateRef } from 'vue';
+import { computed, inject, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { dragStateKey } from '@/keys/InjectionKeys';
 
 const { labelText, labelType, tasks } = defineProps({
@@ -13,56 +13,78 @@ const { labelText, labelType, tasks } = defineProps({
 })
 
 const colTasks = tasks as KanbanTask[]
+
 const taskBody = useTemplateRef("taskBody")
 const insertionIndex = ref(-1)
+const insertLastBottom = computed(() => dragState?.taskId != null && insertionIndex.value === (colTasks.length))
+let draggingFromThisCol = false
 
-const dragState = inject(dragStateKey)
+const dragState = inject(dragStateKey, {
+    taskId: null,
+    element: null
+})
 
 function findMaxInsertionIndex(bodyChildren: HTMLCollection, y: number): number {
+    if (bodyChildren.length === 1 || bodyChildren.length === 0)
+        return 0
     let maxTop = y
-    let index = -1
+    let index = 0
+    let temp = 0
 
     for (let i = 0; i < bodyChildren.length; i++) {
         const element = bodyChildren[i]
 
         if (!element.classList.contains('kn-task'))
             continue
+        if (element== dragState.element){
+            index += 1
+            continue
+        }
         const rect = element.getBoundingClientRect()
         const elementTop = rect.top + (rect.height / 2)
+
         if (elementTop > maxTop) {
             maxTop = elementTop
-            index = i
             break
         }
 
+        index += 1
     }
+
+    // console.log(`1 cY: ${y}, maxTop:${maxTop}, index:${index}`)
+
+    // console.log(`2 cY: ${y}, maxTop:${maxTop}, index:${index}`)
     return index
 }
 
 function mouseMove(event: MouseEvent) {
-    console.log(labelType)
-    if (dragState == null || dragState.taskId === null)
+    if (dragState.taskId === null)
         return
-    
     if (!taskBody.value)
         return
-    if (colTasks.findIndex((p) => p.id === dragState.taskId) != -1) {
-        return
-    }
     const bodyChildren = taskBody.value.children
 
-    if (bodyChildren.length === 0)
-        return
-
-    insertionIndex.value = findMaxInsertionIndex(bodyChildren, event.y)
-
+    let index = Math.abs(findMaxInsertionIndex(bodyChildren, event.y))
+    //wtf i dont why assining index(which is 0) turns insertionIndex.value into 1
+    //and why Math.abs helps
+    insertionIndex.value = index
 }
+
+watch(() => dragState?.taskId, (newValue) => {
+    if (newValue == null) {
+        draggingFromThisCol = false
+    }
+    else if (colTasks.findIndex((p) => p.id === dragState.taskId) != -1) {
+        draggingFromThisCol = true
+    }
+})
+
 
 </script>
 
 
 <template>
-    <div class="tasks-col" @mousemove="mouseMove" >
+    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="insertionIndex = -1" @mouseup="insertionIndex = -1">
         <div class="tasks-col-header">
             <div class="tasks-col-label" :class="labelType">
                 {{ labelText }}
@@ -72,10 +94,11 @@ function mouseMove(event: MouseEvent) {
             </button>
         </div>
         <div class="tasks-col-body" ref="taskBody">
-            <template v-for="(task, index) in colTasks">
-                <div class="fake-task" v-if="insertionIndex === index"></div>
-                <Task :task-obj="task"></Task>
+            <template v-for="(task, i) in colTasks" :key="i">
+                <div class="fake-task" v-if="insertionIndex === i"></div>
+                <Task :task-obj="task">{{ i }}</Task>
             </template>
+            <div class="fake-task" v-if="insertLastBottom"></div>
         </div>
     </div>
 </template>
@@ -137,6 +160,7 @@ function mouseMove(event: MouseEvent) {
     gap: 1rem;
     padding: 0 0.5rem;
     padding-bottom: 0.5rem;
+    position: relative;
 }
 
 .task-col__content {
@@ -149,5 +173,16 @@ function mouseMove(event: MouseEvent) {
     background-color: green;
     border-radius: 5px;
     box-sizing: border-box;
+    animation: growHeight 0.2s forwards;
+}
+
+@keyframes growHeight {
+    0% {
+        height: 0px;
+    }
+
+    100% {
+        height: 100px;
+    }
 }
 </style>

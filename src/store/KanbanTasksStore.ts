@@ -46,7 +46,16 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
                 body: "Some task body text lalalala",
                 important: true,
                 urgent: false
-            }
+            },
+            {
+                id: 3,
+                kanbanId: 0,
+                type: KanbanTaskType.underReview,
+                title: "todo",
+                body: "Some task body text lalalala",
+                important: true,
+                urgent: false
+            } 
             ] as KanbanTask[]
         }
     },

@@ -9,23 +9,21 @@ const { taskObj } = defineProps({
 const dragState = inject(dragStateKey)
 
 const task = taskObj as KanbanTask
+const id = ref('')
 
 const styles = reactive({
     translate: '',
-    transition: 'none'
+    transition: 'none',
+    position: 'inherit',
 })
+
 const taskRef = useTemplateRef('taskRef')
+const disablePe = ref(false)
 
 let mouseCoords = {
     x: 0,
     y: 0
 }
-
-function mouseMoveLocal(event:MouseEvent){
-    // if(dragState && dragState.element === taskRef.value)
-        // event.stopPropagation()
-}
-
 function mouseMoveGlobal(event: MouseEvent) {
     if (!dragState)
         return
@@ -34,7 +32,7 @@ function mouseMoveGlobal(event: MouseEvent) {
     if (task.id === dragState.taskId) {
         const x = event.x - mouseCoords.x;
         const y = event.y - mouseCoords.y;
-        // console.log(x, y)
+        console.log(`left ${taskRef.value?.offsetLeft} top ${taskRef.value?.offsetTop}`)
         styles.transition = 'none'
         styles.translate = `${x}px ${y}px`
     }
@@ -49,8 +47,16 @@ function mouseUp(event: MouseEvent) {
     if (task.id === dragState.taskId) {
         styles.transition = '0.5s'
         styles.translate = '0'
+
         dragState.taskId = null
         dragState.element = null
+
+        disablePe.value = false
+
+        styles.position = 'relative'
+
+        id.value = ''
+
         window.removeEventListener("mousemove", mouseMoveGlobal)
         window.removeEventListener("mouseup", mouseUp)
     }
@@ -58,11 +64,14 @@ function mouseUp(event: MouseEvent) {
 
 function mouseDown(event: MouseEvent) {
     mouseCoords.x = event.x
-    mouseCoords.y = event.y
+    mouseCoords.y = event.y - (taskRef.value?.offsetTop ?? 0)
     if (dragState) {
         dragState.taskId = task.id
         dragState.element = taskRef.value
     }
+    disablePe.value = true
+    styles.position = 'absolute'
+    id.value = 'dragging-task'
     window.addEventListener("mousemove", mouseMoveGlobal, true)
     window.addEventListener("mouseup", mouseUp)
 }
@@ -70,7 +79,10 @@ function mouseDown(event: MouseEvent) {
 </script>
 
 <template>
-    <div class="kn-task" ref="taskRef" @mousemove="mouseMoveLocal" :style="styles" @mousedown.prevent="mouseDown"></div>
+    <div class="kn-task" :id="id" ref="taskRef" :class="{ 'disable-pe': disablePe }" :style="styles"
+        @mousedown.prevent="mouseDown">
+        <slot></slot>
+    </div>
 </template>
 
 <style>
@@ -80,5 +92,10 @@ function mouseDown(event: MouseEvent) {
     background-color: red;
     border-radius: 5px;
     box-sizing: border-box;
+    z-index: 2;
+}
+
+.disable-pe {
+    pointer-events: none;
 }
 </style>
