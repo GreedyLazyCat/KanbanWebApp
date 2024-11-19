@@ -1,14 +1,17 @@
 <script lang="ts" setup>
 import { useKanbanStore } from '@/store/KanbanStore';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, provide, reactive } from 'vue';
 import { useRoute } from 'vue-router';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import TasksColumn from '@/components/TasksColumn.vue';
+import { dragStateKey } from '@/keys/InjectionKeys';
+import { useKanbanTasksStore } from '@/store/KanbanTasksStore';
 
 library.add(faPlus)
 
 const kanbanStore = useKanbanStore()
+const kanbanTasksStore = useKanbanTasksStore()
 const route = useRoute()
 
 
@@ -17,11 +20,38 @@ const kanban = computed(() => {
     return kanbanStore.kanbans.find((p) => p.id === id)
 })
 
-onMounted(() => {
-    // console.log(kanban.value)
-    // console.log(kanbanStore.kanbans)
+const todoTasks = computed(() => {
+    const getToDoTasks = kanbanTasksStore.getTodoByKanban
+    if (!kanban.value) {
+        return []
+    }
+    return getToDoTasks(kanban.value?.id)
 })
-
+const InProgressTasks = computed(() => {
+    const getter = kanbanTasksStore.getInProgressByKanban
+    if (!kanban.value) {
+        return []
+    }
+    return getter(kanban.value?.id)
+})
+const underReviewTasks = computed(() => {
+    const getter = kanbanTasksStore.getUnderReviewByKanban
+    if (!kanban.value) {
+        return []
+    }
+    return getter(kanban.value?.id)
+})
+const doneTasks = computed(() => {
+    const getter = kanbanTasksStore.getDoneByKanban
+    if (!kanban.value) {
+        return []
+    }
+    return getter(kanban.value?.id)
+})
+provide(dragStateKey, reactive({
+    taskId: null,
+    element: null
+}))
 </script>
 
 <template>
@@ -30,18 +60,10 @@ onMounted(() => {
             <h3>{{ kanban?.title }}</h3>
         </div>
         <div class="tasks-body">
-            <div class="tasks-col" v-for="n in 4">
-                <div class="tasks-col-header">
-                    <div class="tasks-col-label">
-                        To Do
-                    </div>
-                    <button class="icon-btn ">
-                        <font-awesome-icon icon="plus" />
-                    </button>
-                </div>
-                <div class="tasks-col-body">
-                </div>
-            </div>
+            <TasksColumn :tasks="todoTasks" label-type="todo" label-text="To Do"></TasksColumn>
+            <TasksColumn :tasks="InProgressTasks" label-type="in-progress" label-text="Work in progress"></TasksColumn>
+            <TasksColumn :tasks="underReviewTasks" label-type="under-review" label-text="Under review"></TasksColumn>
+            <TasksColumn :tasks="doneTasks" label-type="done" label-text="Done"></TasksColumn>
         </div>
     </div>
 </template>
@@ -64,54 +86,13 @@ onMounted(() => {
 .tasks-header {
     display: flex;
     align-items: center;
-    flex-basis: 10%;
+    flex-basis: 5%;
 }
 
 .tasks-body {
     display: flex;
     /* flex-direction: column; */
-    flex-basis: 90%;
-}
-
-.tasks-col {
-    /* flex-grow: 1; */
-    flex-basis: 25%;
-    margin: 0.6rem 0.3rem;
-    background-color: var(--card-bg);
-    border-radius: 5px;
-    border: 1px solid var(--card-border);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.tasks-col-header {
-    flex-basis: 10%;
-    padding: 0.5rem 0.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-
-
-.tasks-col-label {
-    padding: 0.2rem 0.5rem;
-    width: fit-content;
-    background-color: rgb(132, 255, 132);
-    color: green;
-    font-weight: 700;
-    border-radius: 5px;
-}
-
-.tasks-col-body {
-    flex-basis: 90%;
-    display: flex;
-    flex-direction: column;
-}
-
-.task-col__content {
-    flex-basis: 90%;
+    flex-basis: 95%;
 }
 
 .hover-add {

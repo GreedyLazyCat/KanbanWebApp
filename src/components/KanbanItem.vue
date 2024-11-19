@@ -80,6 +80,7 @@ onMounted(() => {
     display: flex;
     justify-content: space-between;
     margin-bottom: 0.7rem;
+    transition: 0.5s;
 }
 
 .new-item-animation {
@@ -98,6 +99,7 @@ onMounted(() => {
 
 .kanban-item:hover {
     cursor: pointer;
+    scale: 1.01;
 }
 
 .kanban-title-edit {
