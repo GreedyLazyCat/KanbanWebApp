@@ -15,6 +15,7 @@ export interface KanbanTask {
     important: boolean
     urgent: boolean
     type: KanbanTaskType
+    row: number
 }
 
 export const useKanbanTasksStore = defineStore('kanbanTasks', {
@@ -27,7 +28,8 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
                 title: "todo",
                 body: "Some task body text lalalala",
                 important: true,
-                urgent: false
+                urgent: false,
+                row: 1
             },
             {
                 id: 1,
@@ -36,7 +38,8 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
                 title: "todo",
                 body: "Some task body text lalalala",
                 important: true,
-                urgent: false
+                urgent: false,
+                row: 1
             },
             {
                 id: 2,
@@ -45,7 +48,8 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
                 title: "todo",
                 body: "Some task body text lalalala",
                 important: true,
-                urgent: false
+                urgent: false,
+                row: 2
             },
             {
                 id: 3,
@@ -54,7 +58,8 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
                 title: "todo",
                 body: "Some task body text lalalala",
                 important: true,
-                urgent: false
+                urgent: false,
+                row: 3
             } 
             ] as KanbanTask[]
         }

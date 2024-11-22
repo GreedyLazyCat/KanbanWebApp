@@ -15,6 +15,7 @@ const styles = reactive({
     translate: '',
     transition: 'none',
     position: 'inherit',
+    gridArea: `${task.row} / 1 / ${task.row} / 1`
 })
 
 const taskRef = useTemplateRef('taskRef')
@@ -86,7 +87,12 @@ function mouseDown(event: MouseEvent) {
 </script>
 
 <template>
-    <div class="kn-task" :id="id" ref="taskRef" :class="{ 'disable-pe': disablePe }" :style="styles"
+    <div 
+        class="kn-task" 
+        :id="id" 
+        ref="taskRef" 
+        :class="{ 'disable-pe': disablePe }" 
+        :style="styles"
         @mousedown.prevent="mouseDown">
         <slot></slot>
     </div>

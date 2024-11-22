@@ -62,20 +62,14 @@ function mouseMove(event: MouseEvent) {
     if (!taskBody.value)
         return
     const bodyChildren = taskBody.value.children
-
-    let index = Math.abs(findMaxInsertionIndex(bodyChildren, event.y))
+    
     //wtf i dont why assining index(which is 0) turns insertionIndex.value into 1
     //and why Math.abs helps
-    insertionIndex.value = index
+    insertionIndex.value = Math.abs(findMaxInsertionIndex(bodyChildren, event.y))
 }
 
-
+//ToDo
 function mouseUp(event: MouseEvent) {
-    if (insertionIndex.value != -1) {
-        const index = taskStore.$state.tasks.findIndex((p) => p.id === colTasks[insertionIndex.value].id)
-
-
-    }
     insertionIndex.value = -1
 }
 
@@ -164,12 +158,13 @@ watch(() => dragState?.taskId, (newValue) => {
 
 .tasks-col-body {
     flex-basis: 95%;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    padding: 0 0.5rem;
-    padding-bottom: 0.5rem;
     position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: min-content;
+    grid-auto-rows: min-content;
+    gap: 1rem;
+    padding: 0 5px;
 }
 
 .task-col__content {
