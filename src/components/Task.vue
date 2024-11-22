@@ -32,7 +32,6 @@ function mouseMoveGlobal(event: MouseEvent) {
     if (task.id === dragState.taskId) {
         const x = event.x - mouseCoords.x;
         const y = event.y - mouseCoords.y;
-        console.log(`left ${taskRef.value?.offsetLeft} top ${taskRef.value?.offsetTop}`)
         styles.transition = 'none'
         styles.translate = `${x}px ${y}px`
     }
@@ -65,13 +64,21 @@ function mouseUp(event: MouseEvent) {
 function mouseDown(event: MouseEvent) {
     mouseCoords.x = event.x
     mouseCoords.y = event.y - (taskRef.value?.offsetTop ?? 0)
+    
+    const x = event.x - mouseCoords.x;
+    const y = event.y - mouseCoords.y;
+   
     if (dragState) {
         dragState.taskId = task.id
         dragState.element = taskRef.value
     }
     disablePe.value = true
+
     styles.position = 'absolute'
+    styles.translate = `${x}px ${y}px`
+
     id.value = 'dragging-task'
+
     window.addEventListener("mousemove", mouseMoveGlobal, true)
     window.addEventListener("mouseup", mouseUp)
 }

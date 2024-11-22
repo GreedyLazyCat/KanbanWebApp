@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Task from '@/components/Task.vue';
-import type { KanbanTask } from '@/store/KanbanTasksStore';
+import { useKanbanTasksStore, type KanbanTask } from '@/store/KanbanTasksStore';
 import { computed, inject, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { dragStateKey } from '@/keys/InjectionKeys';
 
@@ -13,6 +13,7 @@ const { labelText, labelType, tasks } = defineProps({
 })
 
 const colTasks = tasks as KanbanTask[]
+const taskStore = useKanbanTasksStore()
 
 const taskBody = useTemplateRef("taskBody")
 const insertionIndex = ref(-1)
@@ -24,6 +25,7 @@ const dragState = inject(dragStateKey, {
     element: null
 })
 
+//TO REWORK
 function findMaxInsertionIndex(bodyChildren: HTMLCollection, y: number): number {
     if (bodyChildren.length === 1 || bodyChildren.length === 0)
         return 0
@@ -36,7 +38,7 @@ function findMaxInsertionIndex(bodyChildren: HTMLCollection, y: number): number 
 
         if (!element.classList.contains('kn-task'))
             continue
-        if (element== dragState.element){
+        if (element == dragState.element) {
             index += 1
             continue
         }
@@ -51,9 +53,6 @@ function findMaxInsertionIndex(bodyChildren: HTMLCollection, y: number): number 
         index += 1
     }
 
-    // console.log(`1 cY: ${y}, maxTop:${maxTop}, index:${index}`)
-
-    // console.log(`2 cY: ${y}, maxTop:${maxTop}, index:${index}`)
     return index
 }
 
@@ -70,6 +69,16 @@ function mouseMove(event: MouseEvent) {
     insertionIndex.value = index
 }
 
+
+function mouseUp(event: MouseEvent) {
+    if (insertionIndex.value != -1) {
+        const index = taskStore.$state.tasks.findIndex((p) => p.id === colTasks[insertionIndex.value].id)
+
+
+    }
+    insertionIndex.value = -1
+}
+
 watch(() => dragState?.taskId, (newValue) => {
     if (newValue == null) {
         draggingFromThisCol = false
@@ -84,7 +93,7 @@ watch(() => dragState?.taskId, (newValue) => {
 
 
 <template>
-    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="insertionIndex = -1" @mouseup="insertionIndex = -1">
+    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="insertionIndex = -1" @mouseup="mouseUp">
         <div class="tasks-col-header">
             <div class="tasks-col-label" :class="labelType">
                 {{ labelText }}
@@ -96,7 +105,7 @@ watch(() => dragState?.taskId, (newValue) => {
         <div class="tasks-col-body" ref="taskBody">
             <template v-for="(task, i) in colTasks" :key="i">
                 <div class="fake-task" v-if="insertionIndex === i"></div>
-                <Task :task-obj="task">{{ i }}</Task>
+                <Task :task-obj="task">{{ task.id }}</Task>
             </template>
             <div class="fake-task" v-if="insertLastBottom"></div>
         </div>

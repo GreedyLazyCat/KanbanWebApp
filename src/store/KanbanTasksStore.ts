@@ -22,7 +22,7 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
         return {
             tasks: [{
                 id: 0,
-                kanbanId: 0,
+                kanbanId: 1,
                 type: KanbanTaskType.todo,
                 title: "todo",
                 body: "Some task body text lalalala",
@@ -31,7 +31,7 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
             },
             {
                 id: 1,
-                kanbanId: 0,
+                kanbanId: 1,
                 type: KanbanTaskType.underReview,
                 title: "todo",
                 body: "Some task body text lalalala",
@@ -40,7 +40,7 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
             },
             {
                 id: 2,
-                kanbanId: 0,
+                kanbanId: 1,
                 type: KanbanTaskType.underReview,
                 title: "todo",
                 body: "Some task body text lalalala",
@@ -49,7 +49,7 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
             },
             {
                 id: 3,
-                kanbanId: 0,
+                kanbanId: 1,
                 type: KanbanTaskType.underReview,
                 title: "todo",
                 body: "Some task body text lalalala",
