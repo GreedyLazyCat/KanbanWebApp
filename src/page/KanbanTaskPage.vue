@@ -6,7 +6,7 @@ import { library } from '@fortawesome/fontawesome-svg-core';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import TasksColumn from '@/components/TasksColumn.vue';
 import { dragStateKey } from '@/keys/InjectionKeys';
-import { useKanbanTasksStore } from '@/store/KanbanTasksStore';
+import { KanbanTaskType, useKanbanTasksStore } from '@/store/KanbanTasksStore';
 
 library.add(faPlus)
 
@@ -60,10 +60,10 @@ provide(dragStateKey, reactive({
             <h3>{{ kanban?.title }}</h3>
         </div>
         <div class="tasks-body">
-            <TasksColumn :tasks="todoTasks" label-type="todo" label-text="To Do"></TasksColumn>
-            <TasksColumn :tasks="InProgressTasks" label-type="in-progress" label-text="Work in progress"></TasksColumn>
-            <TasksColumn :tasks="underReviewTasks" label-type="under-review" label-text="Under review"></TasksColumn>
-            <TasksColumn :tasks="doneTasks" label-type="done" label-text="Done"></TasksColumn>
+            <TasksColumn :tasks="todoTasks" :label-type="KanbanTaskType.todo" label-text="To Do"></TasksColumn>
+            <TasksColumn :tasks="InProgressTasks" :label-type="KanbanTaskType.inProgress" label-text="Work in progress"></TasksColumn>
+            <TasksColumn :tasks="underReviewTasks" :label-type="KanbanTaskType.underReview" label-text="Under review"></TasksColumn>
+            <TasksColumn :tasks="doneTasks" :label-type="KanbanTaskType.done" label-text="Done"></TasksColumn>
         </div>
     </div>
 </template>

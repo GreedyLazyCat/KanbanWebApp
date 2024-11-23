@@ -3,13 +3,12 @@ import { dragStateKey } from '@/keys/InjectionKeys';
 import type { KanbanTask } from '@/store/KanbanTasksStore';
 import { inject, onUpdated, reactive, ref, useTemplateRef, watch } from 'vue';
 
-const { taskObj, row } = defineProps({
-    taskObj: Object,
-    row: Number
-})
+const { task, row } = defineProps<{
+    task: KanbanTask 
+    row: number
+}>()
 const dragState = inject(dragStateKey)
 
-const task = taskObj as KanbanTask
 
 const id = ref('')
 const taskRef = useTemplateRef('taskRef')

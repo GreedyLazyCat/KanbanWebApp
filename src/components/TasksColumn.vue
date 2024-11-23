@@ -2,157 +2,131 @@
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Task from '@/components/Task.vue';
 import { KanbanTaskType, useKanbanTasksStore, type KanbanTask } from '@/store/KanbanTasksStore';
-import { computed, inject, onMounted, ref, useTemplateRef, watch } from 'vue';
+import { computed, inject, onMounted, reactive, ref, useTemplateRef, watch } from 'vue';
 import { dragStateKey } from '@/keys/InjectionKeys';
 import FakeTask from '@/components/FakeTask.vue';
 import KanbanTaskPage from '@/page/KanbanTaskPage.vue';
 
-const { labelText, labelType, tasks } = defineProps({
-    labelText: String,
-    /** @type {('todo'|'done'|'in-progress'|'under-review')} */
-    labelType: String,
-    tasks: Array
-})
-
-const colTasks = ref(tasks as KanbanTask[])
-const taskStore = useKanbanTasksStore()
-
-const taskBody = useTemplateRef("taskBody")
-const insertAboveIndex = ref(-1)
-const insertLastBottom = computed(() => dragState?.task != null && insertAboveIndex.value === (colTasks.value.length + 1))
-const taskCount = computed(() => colTasks.value.length)
-let draggingFromThisCol = false
+const { labelText, labelType, tasks } = defineProps<{
+    labelText: string
+    labelType: KanbanTaskType
+    tasks: KanbanTask[]
+}>()
 
 const dragState = inject(dragStateKey, {
     task: null,
     element: null
 })
 
-function taskRow(row: number): number {
-    if (!dragState || dragState.task === null || insertAboveIndex.value === -1)
-        return row
-    if (draggingFromThisCol) {
-        if (row < dragState.task.row && insertAboveIndex.value <= row)
-            return row + 1
-        if (row > dragState.task.row && insertAboveIndex.value > row)
-            return row - 1
-        return row
+
+const taskElements = useTemplateRef("taskElement")
+const dragging = ref(false)
+const insertionIndex = ref(-1)
+const taskRows = reactive(new Map<number, number>())
+
+const labelClass = computed(() => {
+    switch (labelType) {
+        case KanbanTaskType.todo:
+            return "todo"
+        case KanbanTaskType.inProgress:
+            return "in-progress"
+        case KanbanTaskType.underReview:
+            return "under-review"
+        case KanbanTaskType.done:
+            return "done"
     }
-    if (row >= insertAboveIndex.value) {
-        return row + 1
-    }
-
-    return row
-
-}
-
+})
 const fakeTaskRow = computed(() => {
-    if (draggingFromThisCol)
-        return Math.max(1, insertAboveIndex.value - 1)
-
-    return insertAboveIndex.value
+    return insertionIndex.value
 })
 
-function findMaxInsertionIndex(bodyChildren: HTMLCollection, y: number): number {
-    if (bodyChildren.length === 1 || bodyChildren.length === 0)
-        return 1
-    let maxTop = y
+function taskRow(row: number) {
+    if (!dragState || !dragState.task)
+        return row
+    if (insertionIndex.value === dragState.task?.row)
+        return row
+    if (row >= insertionIndex.value && insertionIndex.value >= dragState.task.row)
+        return row - 1
+    if (row <= insertionIndex.value && insertionIndex.value <= dragState.task.row)
+        return row + 1
+    return row
+}
+function getInsertionIndex(y: number) {
+    if (taskElements.value === null)
+        return
     let index = 1
-
-    for (let i = 0; i < bodyChildren.length; i++) {
-        const element = bodyChildren[i]
-
-        if (!element.classList.contains('kn-task'))
+    let maxIndex = -1
+    let maxY = y
+    for (let taskRef of taskElements.value) {
+        if (!taskRef)
             continue
-        if (element == dragState.element) {
-            index += 1
+        const taskElement = taskRef.$refs.taskRef
+        if (taskElement === dragState.element) {
+            // index += 1
             continue
         }
-        const rect = element.getBoundingClientRect()
-        const elementTop = rect.top + (rect.height / 2)
-
-        if (elementTop > maxTop) {
-            maxTop = elementTop
+        const rect = taskElement.getBoundingClientRect()
+        const elemY = rect.top + rect.height / 2
+        if (elemY > maxY)
             break
-        }
-
         index += 1
     }
-
     return index
 }
 
 function mouseMove(event: MouseEvent) {
-    if (dragState.task === null)
+    if (!dragState || !dragState.task || !dragState.element)
         return
-    if (!taskBody.value)
-        return
-    const bodyChildren = taskBody.value.children
+    dragging.value = true
+    insertionIndex.value = (getInsertionIndex(event.y) ?? -1)
 
-    //wtf i dont why assining index(which is 0) turns insertionIndex.value into 1
-    //and why Math.abs helps
-    insertAboveIndex.value = Math.abs(findMaxInsertionIndex(bodyChildren, event.y))
-    console.log(`insertion index ${insertAboveIndex.value}`)
+    console.log(`in ${insertionIndex.value} ftr ${fakeTaskRow.value}`)
 }
-
-//ToDo
-function mouseUp(event: MouseEvent) {
-    if (!dragState || dragState.task === null)
+function mouseLeave(event: MouseEvent) {
+    if (!dragState || !dragState.task || !dragState.element)
         return
-    let type = KanbanTaskType.todo
-    switch (labelType) {
-        case 'todo':
-            type = KanbanTaskType.todo
-            break
-        case 'in-progress':
-            type = KanbanTaskType.inProgress
-            break
-        case 'under-review':
-            type = KanbanTaskType.underReview
-            break
-        case 'done':
-            type = KanbanTaskType.done
-            break
-    }
-    taskStore.updateTaskRow(dragState.task,
-        fakeTaskRow.value, type)
-    insertAboveIndex.value = -1
+    dragging.value = false
 }
-
-watch(() => dragState?.task, (newValue) => {
-    if (newValue == null) {
-        draggingFromThisCol = false
-    }
-    else if (dragState.task !== null && colTasks.value.indexOf(dragState.task) != -1) {
-        draggingFromThisCol = true
+watch(() => dragState.task, (newValue) => {
+    if (newValue) {
+        dragging.value = false
+        return
     }
 })
 
-watch(() => tasks, (newValue) => {
-    colTasks.value = tasks as KanbanTask[]
+watch(insertionIndex, () => {
+    let i = 1
+    for(let key of taskRows.keys()){
+        if(dragState.task?.id === key)
+            continue
+        taskRows.set(key, i)
+        i++
+    }
+}
+)
+
+onMounted(() => {
+    for (let task of tasks) {
+        taskRows.set(task.id, task.row)
+    }
 })
-
-
 </script>
 
 
 <template>
-    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="insertAboveIndex = -1" @mouseup="mouseUp"
-        @click="mouseMove">
+    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="mouseLeave" @mouseup="dragging = false">
         <div class="tasks-col-header">
-            <div class="tasks-col-label" :class="labelType">
+            <div class="tasks-col-label" :class="labelClass">
                 {{ labelText }}
             </div>
-            <button class="icon-btn ">
+            <button class="icon-btn">
                 <font-awesome-icon icon="plus" />
             </button>
         </div>
         <div class="tasks-col-body" ref="taskBody">
-            <template v-for="(task, i) in colTasks" :key="task.id">
-                <FakeTask v-if="(insertAboveIndex - 1) === i" :row="fakeTaskRow"></FakeTask>
-                <Task :task-obj="task" :row="taskRow(task.row)">{{ task.id }}</Task>
-            </template>
-            <div class="fake-task" v-if="insertLastBottom"></div>
+            <!-- <FakeTask v-if="dragging" :row="fakeTaskRow" /> -->
+            <Task ref="taskElement" v-for="task in tasks" :task="task" :row="taskRows.get(task.id) ?? 0" :key="task.id">
+            </Task>
         </div>
     </div>
 </template>

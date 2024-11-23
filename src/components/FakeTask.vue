@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { reactive } from 'vue';
+import { reactive, watch } from 'vue';
 
 const {row} = defineProps({
     row: Number
@@ -7,6 +7,10 @@ const {row} = defineProps({
 
 const styles = reactive({
     gridArea: `${row} / 1 / ${row} / 1`
+})
+
+watch(()=> row, (newRow)=>{
+    styles.gridArea = `${row} / 1 / ${row} / 1`
 })
 
 </script>
@@ -23,6 +27,7 @@ const styles = reactive({
     border-radius: 5px;
     box-sizing: border-box;
     animation: growHeight 0.2s forwards;
+    z-index: 3;
 }
 
 @keyframes growHeight {

@@ -32,8 +32,8 @@ function loadKanbans() {
 onMounted(() => {
   document.documentElement.setAttribute("data-theme", "dark");
   nextTick(() => {
-    // animateGetStarted(0)
-    openingAnimation(1)
+    animateGetStarted(0)
+    // openingAnimation(1)
   })
   loadKanbans()
 
