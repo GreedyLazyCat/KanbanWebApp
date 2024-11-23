@@ -92,11 +92,11 @@ watch(() => row, (newValue) => {
 <template>
     <Teleport to="body">
         <div class="kn-task" :style="draggingStyles" v-if="dragging">
-
+            {{ task.id}}
         </div>
     </Teleport>
     <div class="kn-task" :style="{ gridArea: taskGridArea }" v-if="!dragging" ref="taskRef" @mousedown="mouseDown">
-
+        {{ task.id}}
     </div>
 </template>
 
@@ -108,6 +108,7 @@ watch(() => row, (newValue) => {
     border-radius: 5px;
     box-sizing: border-box;
     z-index: 2;
+    color: white;
 }
 
 .disable-pe {

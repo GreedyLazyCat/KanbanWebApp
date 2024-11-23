@@ -45,9 +45,9 @@ function taskRow(row: number) {
         return row
     if (insertionIndex.value === dragState.task?.row)
         return row
-    if (row >= insertionIndex.value && insertionIndex.value >= dragState.task.row)
+    if (row >= insertionIndex.value)
         return row - 1
-    if (row <= insertionIndex.value && insertionIndex.value <= dragState.task.row)
+    if (row <= insertionIndex.value)
         return row + 1
     return row
 }
@@ -86,6 +86,11 @@ function mouseLeave(event: MouseEvent) {
         return
     dragging.value = false
 }
+
+function mouseUp(event: MouseEvent) {
+    // dragging.value = false
+}
+
 watch(() => dragState.task, (newValue) => {
     if (!newValue) {
         dragging.value = false
@@ -93,13 +98,16 @@ watch(() => dragState.task, (newValue) => {
     }
 })
 
+
+
 watch(insertionIndex, (index) => {
+    console.log('updated')
     let i = 1
-    console.log(`inde sfjsdf ${index}`)
     for (let key of taskRows.keys()) {
-        if (dragState.task?.id === key && (index !== -1)) {
-            i += 1
+        if (dragState.task?.id === key && (index !== -1))
             continue
+        if (i === index) {
+            i += 1
         }
         taskRows.set(key, i)
         i++
@@ -116,7 +124,7 @@ onMounted(() => {
 
 
 <template>
-    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="mouseLeave" @mouseup="dragging = false">
+    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="mouseLeave" @mouseup="mouseUp">
         <div class="tasks-col-header">
             <div class="tasks-col-label" :class="labelClass">
                 {{ labelText }}
@@ -127,7 +135,7 @@ onMounted(() => {
         </div>
         <div class="tasks-col-body" ref="taskBody">
             <FakeTask v-if="dragging" :row="fakeTaskRow" />
-            <Task ref="taskElement" v-for="task in tasks" :task="task" :row="taskRows.get(task.id) ?? 0" :key="task.id">
+            <Task ref="taskElement" v-for="task in tasks" :task="task" :row="taskRows.get(task.id) ?? 1" :key="task.id">
             </Task>
         </div>
     </div>

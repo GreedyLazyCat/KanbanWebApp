@@ -27,7 +27,7 @@ watch(()=> row, (newRow)=>{
     border-radius: 5px;
     box-sizing: border-box;
     animation: growHeight 0.2s forwards;
-    z-index: 3;
+    /* z-index: 3; */
 }
 
 @keyframes growHeight {
