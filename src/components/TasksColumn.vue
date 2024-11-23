@@ -88,16 +88,17 @@ function mouseLeave(event: MouseEvent) {
     dragging.value = false
 }
 watch(() => dragState.task, (newValue) => {
-    if (newValue) {
+    if (!newValue) {
         dragging.value = false
-        return
+        insertionIndex.value = -1
     }
 })
 
-watch(insertionIndex, () => {
+watch(insertionIndex, (index) => {
     let i = 1
+    console.log(`inde sfjsdf ${index}`)
     for(let key of taskRows.keys()){
-        if(dragState.task?.id === key)
+        if(dragState.task?.id === key && (index !== -1))
             continue
         taskRows.set(key, i)
         i++

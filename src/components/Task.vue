@@ -4,7 +4,7 @@ import type { KanbanTask } from '@/store/KanbanTasksStore';
 import { inject, onUpdated, reactive, ref, useTemplateRef, watch } from 'vue';
 
 const { task, row } = defineProps<{
-    task: KanbanTask 
+    task: KanbanTask
     row: number
 }>()
 const dragState = inject(dragStateKey)
@@ -90,17 +90,19 @@ function mouseDown(event: MouseEvent) {
 }
 
 watch(() => row, (newValue) => {
-    if(newValue !== null){
+    if (newValue !== null) {
         styles.gridArea = `${newValue} / 1 / ${newValue} / 1`
-    } 
+    }
 })
 
 </script>
 
 <template>
-    <div class="kn-task" :id="id" ref="taskRef" :class="{ 'disable-pe': disablePe }" :style="styles"
-        @mousedown.prevent="mouseDown">
-        <slot></slot>
+    <Teleport to=".tasks-col-body">
+
+    </Teleport>
+    <div class="kn-task">
+
     </div>
 </template>
 
