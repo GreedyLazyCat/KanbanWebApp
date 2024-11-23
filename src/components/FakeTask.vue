@@ -10,7 +10,7 @@ const styles = reactive({
 })
 
 watch(()=> row, (newRow)=>{
-    styles.gridArea = `${row} / 1 / ${row} / 1`
+    styles.gridArea =`${row} / 1 / ${row} / 1` 
 })
 
 </script>

@@ -55,13 +55,12 @@ function getInsertionIndex(y: number) {
     if (taskElements.value === null)
         return
     let index = 1
-    let maxIndex = -1
     let maxY = y
     for (let taskRef of taskElements.value) {
         if (!taskRef)
             continue
         const taskElement = taskRef.$refs.taskRef
-        if (taskElement === dragState.element) {
+        if (taskElement === dragState.element || taskElement === null) {
             // index += 1
             continue
         }
@@ -97,9 +96,11 @@ watch(() => dragState.task, (newValue) => {
 watch(insertionIndex, (index) => {
     let i = 1
     console.log(`inde sfjsdf ${index}`)
-    for(let key of taskRows.keys()){
-        if(dragState.task?.id === key && (index !== -1))
+    for (let key of taskRows.keys()) {
+        if (dragState.task?.id === key && (index !== -1)) {
+            i += 1
             continue
+        }
         taskRows.set(key, i)
         i++
     }
@@ -125,7 +126,7 @@ onMounted(() => {
             </button>
         </div>
         <div class="tasks-col-body" ref="taskBody">
-            <!-- <FakeTask v-if="dragging" :row="fakeTaskRow" /> -->
+            <FakeTask v-if="dragging" :row="fakeTaskRow" />
             <Task ref="taskElement" v-for="task in tasks" :task="task" :row="taskRows.get(task.id) ?? 0" :key="task.id">
             </Task>
         </div>

@@ -9,34 +9,31 @@ const { task, row } = defineProps<{
 }>()
 const dragState = inject(dragStateKey)
 
-
-const id = ref('')
 const taskRef = useTemplateRef('taskRef')
-const disablePe = ref(false)
 
-const styles = reactive({
-    translate: '',
-    transition: 'none',
-    position: 'inherit',
-    gridArea: `${row} / 1 / ${row} / 1`,
-    zIndex: '0'
+const taskGridArea = ref(`${row} / 1 / ${row} / 1`,)
+const dragging = ref(false)
+const draggingStyles = reactive({
+    position: 'absolute',
+    left: '0',
+    top: '0',
+    width: '',
+    pointerEvents: 'none'
 })
 
 
-let mouseCoords = {
+let clickRelativeCoords = {
     x: 0,
     y: 0
 }
+
 function mouseMoveGlobal(event: MouseEvent) {
     if (!dragState || dragState.task === null)
         return
     if (!task)
         return
     if (task.id === dragState.task.id) {
-        const x = event.x - mouseCoords.x;
-        const y = event.y - mouseCoords.y;
-        styles.transition = 'none'
-        styles.translate = `${x}px ${y}px`
+        writeCoordsToDragStyle(event)
     }
 }
 
@@ -47,43 +44,38 @@ function mouseUp(event: MouseEvent) {
     if (!task)
         return
     if (task.id === dragState.task.id) {
-        styles.transition = '0.5s'
-        styles.translate = '0'
+        dragging.value = false
 
-        dragState.task = null
         dragState.element = null
-
-        disablePe.value = false
-
-        styles.position = 'relative'
-        styles.zIndex = '0'
-
-        id.value = ''
+        dragState.task = null
 
         window.removeEventListener("mousemove", mouseMoveGlobal)
         window.removeEventListener("mouseup", mouseUp)
     }
 }
 
+// function write
+
+function writeCoordsToDragStyle(event: MouseEvent) {
+    draggingStyles.left = `${event.x - clickRelativeCoords.x}px`
+    draggingStyles.top = `${event.y - clickRelativeCoords.y}px`
+}
+
 function mouseDown(event: MouseEvent) {
-    mouseCoords.x = event.x
-    mouseCoords.y = event.y
-    // - (taskRef.value?.offsetTop ?? 0)
-
-    const x = event.x - mouseCoords.x;
-    const y = event.y - mouseCoords.y;
-
-    if (dragState) {
-        dragState.task = task
-        dragState.element = taskRef.value
+    if (!dragState)
+        return
+    dragState.element = taskRef.value
+    dragState.task = task
+    if (taskRef.value) {
+        const rect = taskRef.value.getBoundingClientRect()
+        draggingStyles.width = `${rect?.width}px`
+        clickRelativeCoords.x = event.x - rect.left;
+        clickRelativeCoords.y = event.y - rect.top;
+        writeCoordsToDragStyle(event)
     }
-    disablePe.value = true
 
-    styles.position = 'absolute'
-    styles.zIndex = '2'
-    styles.translate = `${x}px ${y}px`
+    dragging.value = true
 
-    id.value = 'dragging-task'
 
     window.addEventListener("mousemove", mouseMoveGlobal, true)
     window.addEventListener("mouseup", mouseUp)
@@ -91,17 +83,19 @@ function mouseDown(event: MouseEvent) {
 
 watch(() => row, (newValue) => {
     if (newValue !== null) {
-        styles.gridArea = `${newValue} / 1 / ${newValue} / 1`
+        taskGridArea.value = `${newValue} / 1 / ${newValue} / 1`
     }
 })
 
 </script>
 
 <template>
-    <Teleport to=".tasks-col-body">
+    <Teleport to="body">
+        <div class="kn-task" :style="draggingStyles" v-if="dragging">
 
+        </div>
     </Teleport>
-    <div class="kn-task">
+    <div class="kn-task" :style="{ gridArea: taskGridArea }" v-if="!dragging" ref="taskRef" @mousedown="mouseDown">
 
     </div>
 </template>
