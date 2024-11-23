@@ -60,8 +60,38 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
                 important: true,
                 urgent: false,
                 row: 3
-            } 
+            }
             ] as KanbanTask[]
+        }
+    },
+    actions: {
+        updateTaskRow(taskToUpdate: KanbanTask, taskRow: number, taskType: KanbanTaskType) {
+            const oldTaskType = taskToUpdate.type
+            let row = 1
+            let insertionRow = 1
+            taskToUpdate.type = taskType
+            taskToUpdate.row = taskRow
+
+            for (let task of this.tasks) {
+                if (task.type === oldTaskType && oldTaskType !== taskType)
+                    task.row = row++
+                console.log(`task id ${task.id}`)
+                if (task.id === taskToUpdate.id) {
+                    insertionRow += 1
+                    continue
+                }
+                if (task.type !== taskType)
+                    continue
+                task.row = insertionRow++
+                // if (task.row >= taskRow) {
+                //     task.row = task.row + 1
+                // }
+                // else if (task.row < taskRow) {
+                //     task.row = task.row - 1
+                // }
+
+                console.log(`task row ${task.row} task id ${task.id}`)
+            }
         }
     },
     getters: {

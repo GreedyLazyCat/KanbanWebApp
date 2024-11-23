@@ -1,7 +1,8 @@
+import type { KanbanTask } from "@/store/KanbanTasksStore";
 import type { InjectionKey } from "vue";
 
 export interface DragState{
-    taskId: number | null
+    task: KanbanTask | null
     element: HTMLElement | null
 }
 

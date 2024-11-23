@@ -1,36 +1,39 @@
 <script lang="ts" setup>
 import { dragStateKey } from '@/keys/InjectionKeys';
 import type { KanbanTask } from '@/store/KanbanTasksStore';
-import { inject, reactive, ref, useTemplateRef } from 'vue';
+import { inject, onUpdated, reactive, ref, useTemplateRef, watch } from 'vue';
 
-const { taskObj } = defineProps({
-    taskObj: Object
+const { taskObj, row } = defineProps({
+    taskObj: Object,
+    row: Number
 })
 const dragState = inject(dragStateKey)
 
 const task = taskObj as KanbanTask
+
 const id = ref('')
+const taskRef = useTemplateRef('taskRef')
+const disablePe = ref(false)
 
 const styles = reactive({
     translate: '',
     transition: 'none',
     position: 'inherit',
-    gridArea: `${task.row} / 1 / ${task.row} / 1`
+    gridArea: `${row} / 1 / ${row} / 1`,
+    zIndex: '0'
 })
 
-const taskRef = useTemplateRef('taskRef')
-const disablePe = ref(false)
 
 let mouseCoords = {
     x: 0,
     y: 0
 }
 function mouseMoveGlobal(event: MouseEvent) {
-    if (!dragState)
+    if (!dragState || dragState.task === null)
         return
     if (!task)
         return
-    if (task.id === dragState.taskId) {
+    if (task.id === dragState.task.id) {
         const x = event.x - mouseCoords.x;
         const y = event.y - mouseCoords.y;
         styles.transition = 'none'
@@ -40,20 +43,21 @@ function mouseMoveGlobal(event: MouseEvent) {
 
 
 function mouseUp(event: MouseEvent) {
-    if (!dragState)
+    if (!dragState || dragState.task === null)
         return
     if (!task)
         return
-    if (task.id === dragState.taskId) {
+    if (task.id === dragState.task.id) {
         styles.transition = '0.5s'
         styles.translate = '0'
 
-        dragState.taskId = null
+        dragState.task = null
         dragState.element = null
 
         disablePe.value = false
 
         styles.position = 'relative'
+        styles.zIndex = '0'
 
         id.value = ''
 
@@ -64,18 +68,20 @@ function mouseUp(event: MouseEvent) {
 
 function mouseDown(event: MouseEvent) {
     mouseCoords.x = event.x
-    mouseCoords.y = event.y - (taskRef.value?.offsetTop ?? 0)
-    
+    mouseCoords.y = event.y
+    // - (taskRef.value?.offsetTop ?? 0)
+
     const x = event.x - mouseCoords.x;
     const y = event.y - mouseCoords.y;
-   
+
     if (dragState) {
-        dragState.taskId = task.id
+        dragState.task = task
         dragState.element = taskRef.value
     }
     disablePe.value = true
 
     styles.position = 'absolute'
+    styles.zIndex = '2'
     styles.translate = `${x}px ${y}px`
 
     id.value = 'dragging-task'
@@ -84,15 +90,16 @@ function mouseDown(event: MouseEvent) {
     window.addEventListener("mouseup", mouseUp)
 }
 
+watch(() => row, (newValue) => {
+    if(newValue !== null){
+        styles.gridArea = `${newValue} / 1 / ${newValue} / 1`
+    } 
+})
+
 </script>
 
 <template>
-    <div 
-        class="kn-task" 
-        :id="id" 
-        ref="taskRef" 
-        :class="{ 'disable-pe': disablePe }" 
-        :style="styles"
+    <div class="kn-task" :id="id" ref="taskRef" :class="{ 'disable-pe': disablePe }" :style="styles"
         @mousedown.prevent="mouseDown">
         <slot></slot>
     </div>

@@ -1,9 +1,11 @@
 <script lang="ts" setup>
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import Task from '@/components/Task.vue';
-import { useKanbanTasksStore, type KanbanTask } from '@/store/KanbanTasksStore';
+import { KanbanTaskType, useKanbanTasksStore, type KanbanTask } from '@/store/KanbanTasksStore';
 import { computed, inject, onMounted, ref, useTemplateRef, watch } from 'vue';
 import { dragStateKey } from '@/keys/InjectionKeys';
+import FakeTask from '@/components/FakeTask.vue';
+import KanbanTaskPage from '@/page/KanbanTaskPage.vue';
 
 const { labelText, labelType, tasks } = defineProps({
     labelText: String,
@@ -12,26 +14,50 @@ const { labelText, labelType, tasks } = defineProps({
     tasks: Array
 })
 
-const colTasks = tasks as KanbanTask[]
+const colTasks = ref(tasks as KanbanTask[])
 const taskStore = useKanbanTasksStore()
 
 const taskBody = useTemplateRef("taskBody")
-const insertionIndex = ref(-1)
-const insertLastBottom = computed(() => dragState?.taskId != null && insertionIndex.value === (colTasks.length))
+const insertAboveIndex = ref(-1)
+const insertLastBottom = computed(() => dragState?.task != null && insertAboveIndex.value === (colTasks.value.length + 1))
+const taskCount = computed(() => colTasks.value.length)
 let draggingFromThisCol = false
 
 const dragState = inject(dragStateKey, {
-    taskId: null,
+    task: null,
     element: null
 })
 
-//TO REWORK
+function taskRow(row: number): number {
+    if (!dragState || dragState.task === null || insertAboveIndex.value === -1)
+        return row
+    if (draggingFromThisCol) {
+        if (row < dragState.task.row && insertAboveIndex.value <= row)
+            return row + 1
+        if (row > dragState.task.row && insertAboveIndex.value > row)
+            return row - 1
+        return row
+    }
+    if (row >= insertAboveIndex.value) {
+        return row + 1
+    }
+
+    return row
+
+}
+
+const fakeTaskRow = computed(() => {
+    if (draggingFromThisCol)
+        return Math.max(1, insertAboveIndex.value - 1)
+
+    return insertAboveIndex.value
+})
+
 function findMaxInsertionIndex(bodyChildren: HTMLCollection, y: number): number {
     if (bodyChildren.length === 1 || bodyChildren.length === 0)
-        return 0
+        return 1
     let maxTop = y
-    let index = 0
-    let temp = 0
+    let index = 1
 
     for (let i = 0; i < bodyChildren.length; i++) {
         const element = bodyChildren[i]
@@ -57,29 +83,53 @@ function findMaxInsertionIndex(bodyChildren: HTMLCollection, y: number): number 
 }
 
 function mouseMove(event: MouseEvent) {
-    if (dragState.taskId === null)
+    if (dragState.task === null)
         return
     if (!taskBody.value)
         return
     const bodyChildren = taskBody.value.children
-    
+
     //wtf i dont why assining index(which is 0) turns insertionIndex.value into 1
     //and why Math.abs helps
-    insertionIndex.value = Math.abs(findMaxInsertionIndex(bodyChildren, event.y))
+    insertAboveIndex.value = Math.abs(findMaxInsertionIndex(bodyChildren, event.y))
+    console.log(`insertion index ${insertAboveIndex.value}`)
 }
 
 //ToDo
 function mouseUp(event: MouseEvent) {
-    insertionIndex.value = -1
+    if (!dragState || dragState.task === null)
+        return
+    let type = KanbanTaskType.todo
+    switch (labelType) {
+        case 'todo':
+            type = KanbanTaskType.todo
+            break
+        case 'in-progress':
+            type = KanbanTaskType.inProgress
+            break
+        case 'under-review':
+            type = KanbanTaskType.underReview
+            break
+        case 'done':
+            type = KanbanTaskType.done
+            break
+    }
+    taskStore.updateTaskRow(dragState.task,
+        fakeTaskRow.value, type)
+    insertAboveIndex.value = -1
 }
 
-watch(() => dragState?.taskId, (newValue) => {
+watch(() => dragState?.task, (newValue) => {
     if (newValue == null) {
         draggingFromThisCol = false
     }
-    else if (colTasks.findIndex((p) => p.id === dragState.taskId) != -1) {
+    else if (dragState.task !== null && colTasks.value.indexOf(dragState.task) != -1) {
         draggingFromThisCol = true
     }
+})
+
+watch(() => tasks, (newValue) => {
+    colTasks.value = tasks as KanbanTask[]
 })
 
 
@@ -87,7 +137,8 @@ watch(() => dragState?.taskId, (newValue) => {
 
 
 <template>
-    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="insertionIndex = -1" @mouseup="mouseUp">
+    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="insertAboveIndex = -1" @mouseup="mouseUp"
+        @click="mouseMove">
         <div class="tasks-col-header">
             <div class="tasks-col-label" :class="labelType">
                 {{ labelText }}
@@ -97,9 +148,9 @@ watch(() => dragState?.taskId, (newValue) => {
             </button>
         </div>
         <div class="tasks-col-body" ref="taskBody">
-            <template v-for="(task, i) in colTasks" :key="i">
-                <div class="fake-task" v-if="insertionIndex === i"></div>
-                <Task :task-obj="task">{{ task.id }}</Task>
+            <template v-for="(task, i) in colTasks" :key="task.id">
+                <FakeTask v-if="(insertAboveIndex - 1) === i" :row="fakeTaskRow"></FakeTask>
+                <Task :task-obj="task" :row="taskRow(task.row)">{{ task.id }}</Task>
             </template>
             <div class="fake-task" v-if="insertLastBottom"></div>
         </div>
@@ -169,24 +220,5 @@ watch(() => dragState?.taskId, (newValue) => {
 
 .task-col__content {
     flex-basis: 90%;
-}
-
-.fake-task {
-    width: 100%;
-    height: 100px;
-    background-color: green;
-    border-radius: 5px;
-    box-sizing: border-box;
-    animation: growHeight 0.2s forwards;
-}
-
-@keyframes growHeight {
-    0% {
-        height: 0px;
-    }
-
-    100% {
-        height: 100px;
-    }
 }
 </style>

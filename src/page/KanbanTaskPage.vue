@@ -49,7 +49,7 @@ const doneTasks = computed(() => {
     return getter(kanban.value?.id)
 })
 provide(dragStateKey, reactive({
-    taskId: null,
+    task: null,
     element: null
 }))
 </script>
