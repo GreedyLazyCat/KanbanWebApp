@@ -7,9 +7,9 @@ import { dragStateKey } from '@/keys/InjectionKeys';
 import FakeTask from '@/components/FakeTask.vue';
 import KanbanTaskPage from '@/page/KanbanTaskPage.vue';
 
-const { labelText, labelType, tasks } = defineProps<{
+const { labelText, columnType, tasks } = defineProps<{
     labelText: string
-    labelType: KanbanTaskType
+    columnType: KanbanTaskType
     tasks: KanbanTask[]
 }>()
 
@@ -18,14 +18,14 @@ const dragState = inject(dragStateKey, {
     element: null
 })
 
-
+const taskStore = useKanbanTasksStore()
 const taskElements = useTemplateRef("taskElement")
 const dragging = ref(false)
 const insertionIndex = ref(-1)
-const taskRows = reactive(new Map<number, number>())
+const taskRows = reactive(new Map<KanbanTask, number>())
 
 const labelClass = computed(() => {
-    switch (labelType) {
+    switch (columnType) {
         case KanbanTaskType.todo:
             return "todo"
         case KanbanTaskType.inProgress:
@@ -53,7 +53,7 @@ function taskRow(row: number) {
 }
 function getInsertionIndex(y: number) {
     if (taskElements.value === null)
-        return
+        return 1
     let index = 1
     let maxY = y
     for (let taskRef of taskElements.value) {
@@ -79,32 +79,48 @@ function mouseMove(event: MouseEvent) {
     dragging.value = true
     insertionIndex.value = (getInsertionIndex(event.y) ?? -1)
 
-    console.log(`in ${insertionIndex.value} ftr ${fakeTaskRow.value}`)
+    // console.log(`in ${insertionIndex.value} ftr ${fakeTaskRow.value}`)
 }
 function mouseLeave(event: MouseEvent) {
     if (!dragState || !dragState.task || !dragState.element)
         return
     dragging.value = false
+    insertionIndex.value = -1
 }
-
+//Im really not sure how to gurantee that this mouseUp
+//will work faster than task's mouseUp
+//Maybe capture will work?
 function mouseUp(event: MouseEvent) {
     // dragging.value = false
+    if (dragState.task && dragging.value) {
+        // dragState.task.type = columnType
+        // dragState.task.row = insertionIndex.value
+        // for (let key of taskRows.keys()) {
+        //     console.log(`task id ${key.id}  row ${taskRows.get(key) ?? 1}`)
+        //     key.row = taskRows.get(key) ?? 1
+        // }
+        insertionIndex.value = -1
+    }
 }
 
 watch(() => dragState.task, (newValue) => {
-    if (!newValue) {
-        dragging.value = false
-        insertionIndex.value = -1
-    }
+    if (newValue)
+        return
+    dragging.value = false
 })
 
 
+watch(() => tasks, (newTasks) => {
+    for (let task of newTasks) {
+        taskRows.set(task, task.row)
+    }
+})
 
 watch(insertionIndex, (index) => {
-    console.log('updated')
+    console.log('update')
     let i = 1
     for (let key of taskRows.keys()) {
-        if (dragState.task?.id === key && (index !== -1))
+        if (dragState.task === key && (index !== -1))
             continue
         if (i === index) {
             i += 1
@@ -117,14 +133,14 @@ watch(insertionIndex, (index) => {
 
 onMounted(() => {
     for (let task of tasks) {
-        taskRows.set(task.id, task.row)
+        taskRows.set(task, task.row)
     }
 })
 </script>
 
 
 <template>
-    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="mouseLeave" @mouseup="mouseUp">
+    <div class="tasks-col" @mousemove="mouseMove" @mouseleave="mouseLeave" @mouseup.capture="mouseUp">
         <div class="tasks-col-header">
             <div class="tasks-col-label" :class="labelClass">
                 {{ labelText }}
@@ -135,7 +151,7 @@ onMounted(() => {
         </div>
         <div class="tasks-col-body" ref="taskBody">
             <FakeTask v-if="dragging" :row="fakeTaskRow" />
-            <Task ref="taskElement" v-for="task in tasks" :task="task" :row="taskRows.get(task.id) ?? 1" :key="task.id">
+            <Task ref="taskElement" v-for="task in tasks" :task="task" :row="taskRows.get(task) ?? 1" :key="task.id">
             </Task>
         </div>
     </div>

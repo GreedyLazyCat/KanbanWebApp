@@ -60,10 +60,10 @@ provide(dragStateKey, reactive({
             <h3>{{ kanban?.title }}</h3>
         </div>
         <div class="tasks-body">
-            <TasksColumn :tasks="todoTasks" :label-type="KanbanTaskType.todo" label-text="To Do"></TasksColumn>
-            <TasksColumn :tasks="InProgressTasks" :label-type="KanbanTaskType.inProgress" label-text="Work in progress"></TasksColumn>
-            <TasksColumn :tasks="underReviewTasks" :label-type="KanbanTaskType.underReview" label-text="Under review"></TasksColumn>
-            <TasksColumn :tasks="doneTasks" :label-type="KanbanTaskType.done" label-text="Done"></TasksColumn>
+            <TasksColumn :tasks="todoTasks" :columnType="KanbanTaskType.todo" label-text="To Do"></TasksColumn>
+            <TasksColumn :tasks="InProgressTasks" :columnType="KanbanTaskType.inProgress" label-text="Work in progress"></TasksColumn>
+            <TasksColumn :tasks="underReviewTasks" :columnType="KanbanTaskType.underReview" label-text="Under review"></TasksColumn>
+            <TasksColumn :tasks="doneTasks" :columnType="KanbanTaskType.done" label-text="Done"></TasksColumn>
         </div>
     </div>
 </template>

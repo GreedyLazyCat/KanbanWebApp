@@ -39,7 +39,7 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
                 body: "Some task body text lalalala",
                 important: true,
                 urgent: false,
-                row: 1
+                row: 2
             },
             {
                 id: 2,
@@ -49,7 +49,7 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
                 body: "Some task body text lalalala",
                 important: true,
                 urgent: false,
-                row: 2
+                row: 1
             },
             {
                 id: 3,
@@ -75,45 +75,40 @@ export const useKanbanTasksStore = defineStore('kanbanTasks', {
             for (let task of this.tasks) {
                 if (task.type === oldTaskType && oldTaskType !== taskType)
                     task.row = row++
-                console.log(`task id ${task.id}`)
                 if (task.id === taskToUpdate.id) {
                     insertionRow += 1
                     continue
                 }
-                if (task.type !== taskType)
-                    continue
-                task.row = insertionRow++
-                // if (task.row >= taskRow) {
-                //     task.row = task.row + 1
-                // }
-                // else if (task.row < taskRow) {
-                //     task.row = task.row - 1
-                // }
+                if (task.type === taskType) {
+
+                    insertionRow += 1
+                }
 
                 console.log(`task row ${task.row} task id ${task.id}`)
             }
-        }
+        },
+        // updateTaskById()
     },
     getters: {
         getTodoByKanban(state) {
             return (id: number) => state.tasks.filter((p) =>
                 p.kanbanId === id && p.type === KanbanTaskType.todo
-            )
+            ).sort((a, b) => a.row - b.row)
         },
         getInProgressByKanban(state) {
             return (id: number) => state.tasks.filter((p) =>
                 p.kanbanId === id && p.type === KanbanTaskType.inProgress
-            )
+            ).sort((a, b) => a.row - b.row)
         },
         getUnderReviewByKanban(state) {
             return (id: number) => state.tasks.filter((p) =>
                 p.kanbanId === id && p.type === KanbanTaskType.underReview
-            )
+            ).sort((a, b) => a.row - b.row)
         },
         getDoneByKanban(state) {
             return (id: number) => state.tasks.filter((p) =>
                 p.kanbanId === id && p.type === KanbanTaskType.done
-            )
+            ).sort((a, b) => a.row - b.row)
         }
     }
 })
